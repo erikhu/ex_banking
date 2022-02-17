@@ -3,16 +3,6 @@ defmodule ExBanking do
   Documentation for `ExBanking`.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> ExBanking.hello()
-      :world
-
-  """
-
   alias ExBanking.User
 
   @spec deposit(user :: String.t, amount :: number, currency :: String.t) :: {:ok, new_balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
