@@ -30,7 +30,7 @@ defmodule ExBankingTest do
 
   test "withdraw user with wrong arguments" do
     ExBanking.create_user("rut")
-    for i <- 0...8 do
+    for _index <- 0..8 do
       ExBanking.deposit("rut", 1, "usd")
     end
     assert ExBanking.deposit("rut", 1, "usd") == {:error, :too_many_requests_to_user}
@@ -48,7 +48,7 @@ defmodule ExBankingTest do
   test "withdraw to many requests" do
     ExBanking.create_user("jhon")
     ExBanking.deposit("jhon", 15, "usd")
-    for i <- 0..8 do
+    for _index <- 0..8 do
       ExBanking.withdraw("jhon", 1, "usd")
     end
     assert ExBanking.withdraw("jhon", 1, "usd") == {:error, :too_many_requests_to_user}
@@ -66,7 +66,7 @@ defmodule ExBankingTest do
 
   test "get balance too many requests" do
     ExBanking.create_user("toby")
-    for i <- 0..8 do
+    for _index <- 0..8 do
       ExBanking.get_balance("toby", "usd")
     end
     assert ExBanking.get_balance("toby", "usd") == {:error, :too_many_requests_to_user}
@@ -91,7 +91,7 @@ defmodule ExBankingTest do
   test "send too many requests to sender" do
     ExBanking.create_user("toby")
     ExBanking.create_user("michi")
-    for i <- 0..8 do
+    for _index <- 0..8 do
       ExBanking.get_balance("toby", "usd")
     end
     assert ExBanking.send("toby", "michi", 1, "usd") == {:error, :too_many_requests_to_sender}
@@ -100,7 +100,7 @@ defmodule ExBankingTest do
   test "send too many requests to receiver" do
     ExBanking.create_user("susy")
     ExBanking.create_user("tony")
-    for i <- 0..8 do
+    for _index <- 0..8 do
       ExBanking.get_balance("susy", "usd")
     end
     assert ExBanking.send("tony", "susy", 1, "usd") == {:error, :too_many_requests_to_receiver}
