@@ -16,7 +16,7 @@ defmodule ExBankingTest do
 
   test "create user that already exists" do
     assert ExBanking.create_user("vitaly") == :ok
-    assert ExBanking.create_user("vitaly") == {:error, :user_already_exists}
+    assert ExBanking.create_user("vitaly") == {:error, :user_already_exist}
   end
 
   test "deposit amount with wrong arguments" do
@@ -26,11 +26,15 @@ defmodule ExBankingTest do
   end
 
   test "deposit amount that user does not exists" do
-    assert ExBanking.deposit("juancho", 1, "usd") == {:error, :user_does_not_exists}
+    assert ExBanking.deposit("juancho", 1, "usd") == {:error, :user_does_not_exist}
   end
 
   test "deposit amount user too many requests" do
-    assert ExBanking.deposit("juancho", 1, "usd") == {:error, :user_does_not_exists}
+    ExBanking.create_user("juancho")
+    for _index <- 0..8 do
+      ExBanking.deposit("juancho", 1, "usd")
+    end
+    assert ExBanking.deposit("juancho", 1, "usd") == {:error, :too_many_requests_to_user}
   end
 
   test "withdraw user with wrong arguments" do
@@ -42,7 +46,7 @@ defmodule ExBankingTest do
   end
 
   test "withdraw user does not exist" do
-    assert ExBanking.withdraw("erik", 1, "usd") == {:error, :user_does_not_exists}
+    assert ExBanking.withdraw("erik", 1, "usd") == {:error, :user_does_not_exist}
   end
 
   test "withdraw not enough money" do
@@ -90,7 +94,7 @@ defmodule ExBankingTest do
 
   test "send receiver does not exists" do
     ExBanking.create_user("luna")
-    assert ExBanking.send("luna", "sol", "1", "usd") == {:error, :receiver_does_not_exists}
+    assert ExBanking.send("luna", "sol", "1", "usd") == {:error, :receiver_does_not_exist}
   end
 
   test "send too many requests to sender" do
