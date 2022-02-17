@@ -10,7 +10,7 @@ defmodule ExBanking.User do
 
   @impl true
   def init(:ok) do
-    {:ok, %{}}
+    {:ok, %{"wallet" => %{"currencies" => %{}}}}
   end
 
   @spec create_user(user :: String.t) :: :ok | {:error, :user_already_exists}
