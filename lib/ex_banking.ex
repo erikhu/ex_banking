@@ -7,6 +7,10 @@ defmodule ExBanking do
 
   @spec deposit(user :: String.t, amount :: number, currency :: String.t) :: {:ok, new_balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
   def deposit(user, amount, currency) do
+    with :ok <- validate_arguments([is_bitstring(user), is_number(amount), is_bitstring(currency), amount >= 0]),
+         {:ok, pid} <- User.get_user(user) do
+      User.deposit(pid, amount, currency)
+    end
   end
 
   @spec create_user(user :: String.t) :: :ok | {:error, :wrong_arguments | :user_already_exists}
