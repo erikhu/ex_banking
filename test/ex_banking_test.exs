@@ -4,13 +4,18 @@ defmodule ExBankingTest do
 
   alias ExBanking
 
+  setup do
+    start_supervised!(ExBanking.Supervisor)
+    :ok
+  end
+
   test "create user with wrong arguments" do
     assert ExBanking.create_user(0) == {:error, :wrong_arguments}
     assert ExBanking.create_user(%{}) == {:error, :wrong_arguments}
   end
 
   test "create user that already exists" do
-    ExBanking.create_user("vitaly")
+    assert ExBanking.create_user("vitaly") == :ok
     assert ExBanking.create_user("vitaly") == {:error, :user_already_exists}
   end
 
