@@ -5,8 +5,7 @@ defmodule ExBanking.User do
 
   @impl true
   def start_link(user) do
-    name = String.to_atom(user)
-    GenServer.start_link(__MODULE__, :ok, name: name)
+    GenServer.start_link(__MODULE__, :ok, name: via_name(user))
   end
 
   @impl true
@@ -22,5 +21,24 @@ defmodule ExBanking.User do
       _ ->
         {:error, :user_already_exists}
     end
+  end
+
+  @spec get_user(String.t) :: {:ok, pid()} | {:error, :user_does_not_exist}
+  def get_user(user) do
+    case Registry.lookup(Registry.ExBanking, user) do
+      [{pid, :ok}] ->
+        {:ok, pid}
+      _ ->
+        {:error, :user_does_not_exist}
+    end
+  end
+
+  @spec deposit(pid(), number(), String.t) :: {:ok, number()} | {:error, :too_many_requests_to_user}
+  def deposit(pid, amount, currency) do
+    GenServer.call(pid, {:deposit, %{amount: amount, currency: currency}})
+  end
+
+  defp via_name(user) do
+    {:via, Registry, {Registry.ExBanking, user, :ok}}
   end
 end
