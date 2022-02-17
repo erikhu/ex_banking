@@ -8,7 +8,8 @@ defmodule ExBanking.Supervisor do
   @impl true
   def init(_init_args) do
     children = [
-      {DynamicSupervisor, strategy: :one_for_one, name: ExBanking.DynamicSupervisor}
+      {DynamicSupervisor, strategy: :one_for_one, name: ExBanking.DynamicSupervisor},
+      {Registry, keys: :unique, name: Registry.ExBanking}
     ]
     Supervisor.init(children, strategy: :one_for_one)
   end
