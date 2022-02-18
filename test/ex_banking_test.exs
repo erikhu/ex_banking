@@ -44,10 +44,8 @@ defmodule ExBankingTest do
 
   test "withdraw user with wrong arguments" do
     ExBanking.create_user("rut")
-    for _index <- 0..8 do
-      ExBanking.deposit("rut", 1, "usd")
-    end
-    assert ExBanking.deposit("rut", 1, "usd") == {:error, :too_many_requests_to_user}
+    assert ExBanking.withdraw("rut", "1", "usd") == {:error, :wrong_arguments}
+    assert ExBanking.withdraw("rut", %{}, "usd") == {:error, :wrong_arguments}
   end
 
   test "withdraw user does not exist" do
