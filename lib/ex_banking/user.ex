@@ -48,6 +48,6 @@ defmodule ExBanking.User do
     currencies = Map.put(state["wallet"]["currencies"], currency, new_amount)
     wallet = Map.put(state["wallet"], "currencies", currencies)
     state = Map.put(state, "wallet", wallet)
-    {:reply, :ok, state}
+    {:reply, {:ok, new_amount}, state}
   end
 end
