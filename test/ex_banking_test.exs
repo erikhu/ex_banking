@@ -97,7 +97,7 @@ defmodule ExBankingTest do
 
   test "send receiver does not exists" do
     ExBanking.create_user("luna")
-    assert ExBanking.send("luna", "sol", "1", "usd") == {:error, :receiver_does_not_exist}
+    assert ExBanking.send("luna", "sol", 1, "usd") == {:error, :receiver_does_not_exist}
   end
 
   test "send too many requests to sender" do
