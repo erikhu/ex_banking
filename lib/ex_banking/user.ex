@@ -1,8 +1,6 @@
 defmodule ExBanking.User do
   use GenServer
 
-  alias __MODULE__
-
   def start_link(user) do
     GenServer.start_link(__MODULE__, {:ok, user}, name: via_name(user))
   end
@@ -14,8 +12,10 @@ defmodule ExBanking.User do
 
   @spec create_user(user :: String.t) :: :ok | {:error, :user_already_exists}
   def create_user(user) do
-    case DynamicSupervisor.start_child(ExBanking.DynamicSupervisor, %{id: __MODULE__, start: {User, :start_link, [user]}})  do
-      {:ok, _} ->
+    name = String.to_atom(user)
+    case GenServer.start_link(__MODULE__, {:ok, user}, name: name)  do
+      {:ok, pid} ->
+        Process.put(user, pid)
         :ok
       _ ->
         {:error, :user_already_exist}
@@ -24,11 +24,11 @@ defmodule ExBanking.User do
 
   @spec get_user(String.t) :: {:ok, pid()} | {:error, :user_does_not_exist}
   def get_user(user) do
-    case Registry.lookup(Registry.ExBanking, user) do
-      [{pid, :ok}] ->
-        {:ok, pid}
-      _ ->
+    case Process.get(user) do
+      nil ->
         {:error, :user_does_not_exist}
+      pid ->
+        {:ok, pid}
     end
   end
   def get_user(user, custom_error) do
