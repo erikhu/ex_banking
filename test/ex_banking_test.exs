@@ -5,11 +5,6 @@ defmodule ExBankingTest do
   alias ExBanking
   alias ExBanking.User
 
-  setup do
-    start_supervised!(ExBanking.Supervisor)
-    :ok
-  end
-
   test "create user with wrong arguments" do
     assert ExBanking.create_user(0) == {:error, :wrong_arguments}
     assert ExBanking.create_user(%{}) == {:error, :wrong_arguments}
@@ -79,12 +74,12 @@ defmodule ExBankingTest do
   end
 
   test "get balance too many requests" do
-    ExBanking.create_user("toby")
-    {:ok, pid} = User.get_user("toby")
+    ExBanking.create_user("maradona")
+    {:ok, pid} = User.get_user("maradona")
     for _index <- 0..9 do
       send(pid, %{})
     end
-    assert ExBanking.get_balance("toby", "usd") == {:error, :too_many_requests_to_user}
+    assert ExBanking.get_balance("maradona", "usd") == {:error, :too_many_requests_to_user}
   end
 
   test "send wrong arguments" do
