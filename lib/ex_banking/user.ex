@@ -3,7 +3,6 @@ defmodule ExBanking.User do
 
   alias __MODULE__
 
-  @impl true
   def start_link(user) do
     GenServer.start_link(__MODULE__, {:ok, user}, name: via_name(user))
   end
