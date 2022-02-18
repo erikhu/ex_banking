@@ -122,4 +122,13 @@ defmodule ExBankingTest do
     end
     assert ExBanking.send("tony", "susy", 1, "usd") == {:error, :too_many_requests_to_receiver}
   end
+
+  test "send balance successful" do
+    ExBanking.create_user("rafi")
+    ExBanking.create_user("gato")
+    ExBanking.deposit("rafi", 10, "btc")
+    assert ExBanking.send("rafi", "gato", 2, "btc") == {:ok, 8, 2}
+    assert ExBanking.get_balance("rafi", "btc") == {:ok, 8}
+    assert ExBanking.get_balance("gato", "btc") == {:ok, 2}
+  end
 end
