@@ -8,7 +8,7 @@ defmodule ExBanking do
   @spec deposit(user :: String.t, amount :: number, currency :: String.t) ::
   {:ok, new_balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
   def deposit(user, amount, currency) do
-    with :ok <- validate_arguments([is_bitstring(user), is_number(amount), is_bitstring(currency), amount >= 0]),
+    with :ok <- validate_arguments([is_binary(user), is_number(amount), is_binary(currency), amount >= 0]),
          {:ok, pid} <- User.get_user(user) do
       User.deposit(pid, amount, currency)
     end
@@ -16,7 +16,7 @@ defmodule ExBanking do
 
   @spec create_user(user :: String.t) :: :ok | {:error, :wrong_arguments | :user_already_exists}
   def create_user(user) do
-    with :ok <- validate_arguments([is_bitstring(user)]) do
+    with :ok <- validate_arguments([is_binary(user)]) do
       User.create_user(user)
     end
   end
@@ -24,7 +24,7 @@ defmodule ExBanking do
   @spec withdraw(user :: String.t, amount :: number, currency :: String.t) ::
   {:ok, new_balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :not_enough_money | :too_many_requests_to_user}
   def withdraw(user, amount, currency) do
-    with :ok <- validate_arguments([is_bitstring(user), is_number(amount), is_bitstring(currency), amount >= 0]) ,
+    with :ok <- validate_arguments([is_binary(user), is_number(amount), is_binary(currency), amount >= 0]) ,
          {:ok, pid} <- User.get_user(user) do
       User.withdraw(pid, amount, currency)
     end
@@ -33,7 +33,7 @@ defmodule ExBanking do
   @spec get_balance(user :: String.t, currency :: String.t) ::
   {:ok, balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
   def get_balance(user, currency) do
-    with :ok <- validate_arguments([is_bitstring(user), is_bitstring(currency)]) ,
+    with :ok <- validate_arguments([is_binary(user), is_binary(currency)]) ,
          {:ok, pid} <- User.get_user(user) do
       User.get_balance(pid, currency)
     end
