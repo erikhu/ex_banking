@@ -37,6 +37,11 @@ defmodule ExBankingTest do
     assert ExBanking.deposit("juancho", 1, "usd") == {:error, :too_many_requests_to_user}
   end
 
+  test "deposit amount successful" do
+    ExBanking.create_user("mune")
+    assert ExBanking.deposit("mune", 1, "usd") == {:ok, 1}
+  end
+
   test "withdraw user with wrong arguments" do
     ExBanking.create_user("rut")
     for _index <- 0..8 do
