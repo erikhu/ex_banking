@@ -19,7 +19,7 @@ defmodule ExBanking.User do
       {:ok, _} ->
         :ok
       _ ->
-        {:error, :user_already_exists}
+        {:error, :user_already_exist}
     end
   end
 
