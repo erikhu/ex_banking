@@ -32,25 +32,77 @@ defmodule ExBanking.User do
         {:error, :user_does_not_exist}
     end
   end
+  def get_user(user, custom_error) do
+    case get_user(user) do
+      {:ok, pid} ->
+        {:ok, pid}
+      _ ->
+        {:error, custom_error}
+    end
+  end
 
   @spec deposit(pid(), number(), String.t) :: {:ok, number()} | {:error, :too_many_requests_to_user}
   def deposit(pid, amount, currency) do
-    GenServer.call(pid, {:deposit, %{amount: amount, currency: currency}})
+    case validate_too_many_requests(pid) do
+      :ok ->
+        GenServer.call(pid, {:deposit, %{amount: amount, currency: currency}})
+      error ->
+        error
+    end
   end
 
   @spec withdraw(pid(), number(), String.t) :: {:ok, number()} | {:error, :not_enough_money | :too_many_requests_to_user}
   def withdraw(pid, amount, currency) do
-    GenServer.call(pid, {:withdraw, %{amount: amount, currency: currency}})
+    case validate_too_many_requests(pid) do
+      :ok ->
+        GenServer.call(pid, {:withdraw, %{amount: amount, currency: currency}})
+      error ->
+        error
+    end
   end
 
   @spec get_balance(pid(), binary()) :: {:ok, balance :: number} | {:error, :too_many_requests_to_user}
   def get_balance(pid, currency) do
-    GenServer.call(pid, {:get_balance, %{currency: currency}})
+    case validate_too_many_requests(pid) do
+      :ok ->
+        GenServer.call(pid, {:get_balance, %{currency: currency}})
+      error ->
+        error
+    end
   end
 
+  @spec send(pid(), pid(), number(), binary()) :: {:ok, from_user_balance :: number(), to_user_balance :: number()} | {:error, :not_enough_money | :too_many_requests_to_sender | :too_many_requests_to_receiver}
+  def send(pid_sender, pid_receiver, amount, currency) do
+    with :ok <- validate_too_many_requests(pid_sender, :too_many_requests_to_sender),
+         :ok <- validate_too_many_requests(pid_receiver, :too_many_requests_to_receiver),
+         {:ok, sender_balance} <- withdraw(pid_sender, amount, currency),
+         {:ok, receiver_balance} <- deposit(pid_receiver, amount, currency)
+      do
+      {:ok, sender_balance, receiver_balance}
+    end
+  end
 
   defp via_name(user) do
     {:via, Registry, {Registry.ExBanking, user, :ok}}
+  end
+
+  @spec validate_too_many_requests(pid()) :: :ok | {:error, :too_many_requests_to_user}
+  @spec validate_too_many_requests(pid(), atom()) :: :ok | {:error, atom()}
+  defp validate_too_many_requests(pid) do
+    {:message_queue_len, n} = Process.info(pid, :message_queue_len)
+    if n >= 10 do
+      {:error, :too_many_requests_to_user}
+    else
+      :ok
+    end
+  end
+  defp validate_too_many_requests(pid, custom_message) do
+    case validate_too_many_requests(pid) do
+      :ok ->
+        :ok
+      _ ->
+        {:error, custom_message}
+    end
   end
 
   @impl true
