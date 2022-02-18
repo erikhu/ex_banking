@@ -5,12 +5,12 @@ defmodule ExBanking.User do
 
   @impl true
   def start_link(user) do
-    GenServer.start_link(__MODULE__, :ok, name: via_name(user))
+    GenServer.start_link(__MODULE__, {:ok, user}, name: via_name(user))
   end
 
   @impl true
-  def init(:ok) do
-    {:ok, %{"wallet" => %{"currencies" => %{}}}}
+  def init({:ok, user}) do
+    {:ok, %{"user" => user, "wallet" => %{"currencies" => %{}}}}
   end
 
   @spec create_user(user :: String.t) :: :ok | {:error, :user_already_exists}
@@ -40,5 +40,14 @@ defmodule ExBanking.User do
 
   defp via_name(user) do
     {:via, Registry, {Registry.ExBanking, user, :ok}}
+  end
+
+  @impl true
+  def handle_call({:deposit, %{amount: amount, currency: currency}}, _from, state) do
+    new_amount = Map.get(state["wallet"]["currencies"], currency, 0) + amount
+    currencies = Map.put(state["wallet"]["currencies"], currency, new_amount)
+    wallet = Map.put(state["wallet"], "currencies", currencies)
+    state = Map.put(state, "wallet", wallet)
+    {:reply, :ok, state}
   end
 end
