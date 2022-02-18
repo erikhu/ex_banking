@@ -22,7 +22,7 @@ defmodule ExBankingTest do
   end
 
   test "deposit amount that user does not exists" do
-    assert ExBanking.deposit("juancho", 1, "usd") == {:error, :user_does_not_exist}
+    assert ExBanking.deposit("martin", 1, "usd") == {:error, :user_does_not_exist}
   end
 
   test "deposit amount user too many requests" do
@@ -55,12 +55,12 @@ defmodule ExBankingTest do
   end
 
   test "withdraw to many requests" do
-    ExBanking.create_user("jhon")
-    {:ok, pid} = User.get_user("jhon")
+    ExBanking.create_user("deep")
+    {:ok, pid} = User.get_user("deep")
     for _index <- 0..9 do
       send(pid, %{})
     end
-    assert ExBanking.withdraw("jhon", 1, "usd") == {:error, :too_many_requests_to_user}
+    assert ExBanking.withdraw("deep", 1, "usd") == {:error, :too_many_requests_to_user}
   end
 
   test "get balance wrong arguments" do
@@ -89,23 +89,23 @@ defmodule ExBankingTest do
   end
 
   test "send sender does not exists" do
-    ExBanking.create_user("sol")
-    assert ExBanking.send("luna", "sol", 1, "usd") == {:error, :sender_does_not_exist}
+    ExBanking.create_user("ada")
+    assert ExBanking.send("rpc", "ada", 1, "usd") == {:error, :sender_does_not_exist}
   end
 
   test "send receiver does not exists" do
     ExBanking.create_user("luna")
-    assert ExBanking.send("luna", "sol", 1, "usd") == {:error, :receiver_does_not_exist}
+    assert ExBanking.send("luna", "solana", 1, "usd") == {:error, :receiver_does_not_exist}
   end
 
   test "send too many requests to sender" do
-    ExBanking.create_user("tony")
+    ExBanking.create_user("stark")
     ExBanking.create_user("michi")
-    {:ok, pid} = User.get_user("tony")
+    {:ok, pid} = User.get_user("stark")
     for _index <- 0..9 do
       send(pid, %{})
     end
-    assert ExBanking.send("tony", "michi", 1, "usd") == {:error, :too_many_requests_to_sender}
+    assert ExBanking.send("stark", "michi", 1, "usd") == {:error, :too_many_requests_to_sender}
   end
 
   test "send too many requests to receiver" do
