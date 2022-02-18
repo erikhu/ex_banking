@@ -1,6 +1,8 @@
 defmodule ExBanking.User do
   use GenServer
 
+  alias __MODULE__
+
   def start_link(user) do
     GenServer.start_link(__MODULE__, {:ok, user}, name: via_name(user))
   end
@@ -12,10 +14,8 @@ defmodule ExBanking.User do
 
   @spec create_user(user :: String.t) :: :ok | {:error, :user_already_exists}
   def create_user(user) do
-    name = String.to_atom(user)
-    case GenServer.start_link(__MODULE__, {:ok, user}, name: name)  do
-      {:ok, pid} ->
-        Process.put(user, pid)
+    case DynamicSupervisor.start_child(ExBanking.DynamicSupervisor, %{id: __MODULE__, start: {User, :start_link, [user]}})  do
+      {:ok, _} ->
         :ok
       _ ->
         {:error, :user_already_exist}
@@ -24,11 +24,11 @@ defmodule ExBanking.User do
 
   @spec get_user(String.t) :: {:ok, pid()} | {:error, :user_does_not_exist}
   def get_user(user) do
-    case Process.get(user) do
-      nil ->
-        {:error, :user_does_not_exist}
-      pid ->
+    case Registry.lookup(Registry.ExBanking, user) do
+      [{pid, :ok}] ->
         {:ok, pid}
+      _ ->
+        {:error, :user_does_not_exist}
     end
   end
   def get_user(user, custom_error) do
@@ -129,5 +129,10 @@ defmodule ExBanking.User do
   @impl true
   def handle_call({:get_balance, %{currency: currency}}, _from, state) do
     {:reply, {:ok, Map.get(state["wallet"]["currencies"], currency, 0.00)}, state}
+  end
+
+  @impl true
+  def handle_info(_, state) do
+    {:noreply, state}
   end
 end
