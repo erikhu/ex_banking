@@ -33,6 +33,10 @@ defmodule ExBanking do
   @spec get_balance(user :: String.t, currency :: String.t) ::
   {:ok, balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :too_many_requests_to_user}
   def get_balance(user, currency) do
+    with :ok <- validate_arguments([is_bitstring(user), is_bitstring(currency)]) ,
+         {:ok, pid} <- User.get_user(user) do
+      User.get_balance(pid, currency)
+    end
   end
 
   @spec send(from_user :: String.t, to_user :: String.t, amount :: number, currency :: String.t) ::
