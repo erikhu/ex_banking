@@ -3,6 +3,7 @@ defmodule ExBankingTest do
   doctest ExBanking
 
   alias ExBanking
+  alias ExBanking.User
 
   setup do
     start_supervised!(ExBanking.Supervisor)
@@ -31,8 +32,9 @@ defmodule ExBankingTest do
 
   test "deposit amount user too many requests" do
     ExBanking.create_user("juancho")
-    for _index <- 0..8 do
-      ExBanking.deposit("juancho", 1, "usd")
+    {:ok, pid} = User.get_user("juancho")
+    for _index <- 0..9 do
+      send(pid, %{})
     end
     assert ExBanking.deposit("juancho", 1, "usd") == {:error, :too_many_requests_to_user}
   end
@@ -59,9 +61,9 @@ defmodule ExBankingTest do
 
   test "withdraw to many requests" do
     ExBanking.create_user("jhon")
-    ExBanking.deposit("jhon", 15, "usd")
-    for _index <- 0..8 do
-      ExBanking.withdraw("jhon", 1, "usd")
+    {:ok, pid} = User.get_user("jhon")
+    for _index <- 0..9 do
+      send(pid, %{})
     end
     assert ExBanking.withdraw("jhon", 1, "usd") == {:error, :too_many_requests_to_user}
   end
@@ -78,8 +80,9 @@ defmodule ExBankingTest do
 
   test "get balance too many requests" do
     ExBanking.create_user("toby")
-    for _index <- 0..8 do
-      ExBanking.get_balance("toby", "usd")
+    {:ok, pid} = User.get_user("toby")
+    for _index <- 0..9 do
+      send(pid, %{})
     end
     assert ExBanking.get_balance("toby", "usd") == {:error, :too_many_requests_to_user}
   end
@@ -101,19 +104,21 @@ defmodule ExBankingTest do
   end
 
   test "send too many requests to sender" do
-    ExBanking.create_user("toby")
+    ExBanking.create_user("tony")
     ExBanking.create_user("michi")
-    for _index <- 0..8 do
-      ExBanking.get_balance("toby", "usd")
+    {:ok, pid} = User.get_user("tony")
+    for _index <- 0..9 do
+      send(pid, %{})
     end
-    assert ExBanking.send("toby", "michi", 1, "usd") == {:error, :too_many_requests_to_sender}
+    assert ExBanking.send("tony", "michi", 1, "usd") == {:error, :too_many_requests_to_sender}
   end
 
   test "send too many requests to receiver" do
     ExBanking.create_user("susy")
     ExBanking.create_user("tony")
-    for _index <- 0..8 do
-      ExBanking.get_balance("susy", "usd")
+    {:ok, pid} = User.get_user("susy")
+    for _index <- 0..9 do
+      send(pid, %{})
     end
     assert ExBanking.send("tony", "susy", 1, "usd") == {:error, :too_many_requests_to_receiver}
   end
