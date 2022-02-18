@@ -42,6 +42,11 @@ defmodule ExBanking do
   @spec send(from_user :: String.t, to_user :: String.t, amount :: number, currency :: String.t) ::
   {:ok, from_user_balance :: number, to_user_balance :: number} | {:error, :wrong_arguments | :not_enough_money | :sender_does_not_exist | :receiver_does_not_exist | :too_many_requests_to_sender | :too_many_requests_to_receiver}
   def send(from_user, to_user, amount, currency) do
+    with :ok <- validate_arguments([is_binary(from_user), is_binary(to_user), is_binary(currency), is_number(amount), amount >= 0]),
+         {:ok, pid_sender} <- User.get_user(from_user, :sender_does_not_exist),
+         {:ok, pid_receiver} <- User.get_user(to_user, :receiver_does_not_exist) do
+      User.send(pid_sender, pid_receiver, amount, currency)
+    end
   end
 
   defp validate_arguments(arguments) do
