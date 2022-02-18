@@ -38,6 +38,11 @@ defmodule ExBanking.User do
     GenServer.call(pid, {:deposit, %{amount: amount, currency: currency}})
   end
 
+  @spec withdraw(pid(), number(), String.t) :: {:ok, number()} | {:error, :not_enough_money | :too_many_requests_to_user}
+  def withdraw(pid, amount, currency) do
+    GenServer.call(pid, {:withdraw, %{amount: amount, currency: currency}})
+  end
+
   defp via_name(user) do
     {:via, Registry, {Registry.ExBanking, user, :ok}}
   end
@@ -49,5 +54,18 @@ defmodule ExBanking.User do
     wallet = Map.put(state["wallet"], "currencies", currencies)
     state = Map.put(state, "wallet", wallet)
     {:reply, {:ok, new_amount}, state}
+  end
+
+  @impl true
+  def handle_call({:withdraw, %{amount: amount, currency: currency}}, _from, state) do
+    new_amount = Map.get(state["wallet"]["currencies"], currency, 0) - amount
+    currencies = Map.put(state["wallet"]["currencies"], currency, new_amount)
+    wallet = Map.put(state["wallet"], "currencies", currencies)
+    new_state = Map.put(state, "wallet", wallet)
+    if new_amount >= 0 do
+      {:reply, {:ok, new_amount}, new_state}
+    else
+      {:reply, {:error, :not_enough_money}, state}
+    end
   end
 end
