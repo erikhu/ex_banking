@@ -24,6 +24,10 @@ defmodule ExBanking do
   @spec withdraw(user :: String.t, amount :: number, currency :: String.t) ::
   {:ok, new_balance :: number} | {:error, :wrong_arguments | :user_does_not_exist | :not_enough_money | :too_many_requests_to_user}
   def withdraw(user, amount, currency) do
+    with :ok <- validate_arguments([is_bitstring(user), is_number(amount), is_bitstring(currency), amount >= 0]) ,
+         {:ok, pid} <- User.get_user(user) do
+      User.withdraw(pid, amount, currency)
+    end
   end
 
   @spec get_balance(user :: String.t, currency :: String.t) ::
