@@ -43,6 +43,12 @@ defmodule ExBanking.User do
     GenServer.call(pid, {:withdraw, %{amount: amount, currency: currency}})
   end
 
+  @spec get_balance(pid(), binary()) :: {:ok, balance :: number} | {:error, :too_many_requests_to_user}
+  def get_balance(pid, currency) do
+    GenServer.call(pid, {:get_balance, %{currency: currency}})
+  end
+
+
   defp via_name(user) do
     {:via, Registry, {Registry.ExBanking, user, :ok}}
   end
@@ -67,5 +73,10 @@ defmodule ExBanking.User do
     else
       {:reply, {:error, :not_enough_money}, state}
     end
+  end
+
+  @impl true
+  def handle_call({:get_balance, %{currency: currency}}, _from, state) do
+    {:reply, {:ok, Map.get(state["wallet"]["currencies"], currency, 0)}, state}
   end
 end
