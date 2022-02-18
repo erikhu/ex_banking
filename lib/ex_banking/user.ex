@@ -45,7 +45,7 @@ defmodule ExBanking.User do
   def deposit(pid, amount, currency) do
     case validate_too_many_requests(pid) do
       :ok ->
-        GenServer.call(pid, {:deposit, %{amount: amount, currency: currency}})
+        GenServer.call(pid, {:deposit, %{amount: Float.round(amount, 2), currency: currency}})
       error ->
         error
     end
@@ -55,7 +55,7 @@ defmodule ExBanking.User do
   def withdraw(pid, amount, currency) do
     case validate_too_many_requests(pid) do
       :ok ->
-        GenServer.call(pid, {:withdraw, %{amount: amount, currency: currency}})
+        GenServer.call(pid, {:withdraw, %{amount: Float.round(amount, 2), currency: currency}})
       error ->
         error
     end
@@ -107,7 +107,7 @@ defmodule ExBanking.User do
 
   @impl true
   def handle_call({:deposit, %{amount: amount, currency: currency}}, _from, state) do
-    new_amount = Map.get(state["wallet"]["currencies"], currency, 0) + amount
+    new_amount = Float.round(Map.get(state["wallet"]["currencies"], currency, 0.00) + amount, 2)
     currencies = Map.put(state["wallet"]["currencies"], currency, new_amount)
     wallet = Map.put(state["wallet"], "currencies", currencies)
     state = Map.put(state, "wallet", wallet)
@@ -116,7 +116,7 @@ defmodule ExBanking.User do
 
   @impl true
   def handle_call({:withdraw, %{amount: amount, currency: currency}}, _from, state) do
-    new_amount = Map.get(state["wallet"]["currencies"], currency, 0) - amount
+    new_amount = Float.round(Map.get(state["wallet"]["currencies"], currency, 0.00) - amount, 2)
     currencies = Map.put(state["wallet"]["currencies"], currency, new_amount)
     wallet = Map.put(state["wallet"], "currencies", currencies)
     new_state = Map.put(state, "wallet", wallet)
@@ -129,6 +129,6 @@ defmodule ExBanking.User do
 
   @impl true
   def handle_call({:get_balance, %{currency: currency}}, _from, state) do
-    {:reply, {:ok, Map.get(state["wallet"]["currencies"], currency, 0)}, state}
+    {:reply, {:ok, Map.get(state["wallet"]["currencies"], currency, 0.00)}, state}
   end
 end
